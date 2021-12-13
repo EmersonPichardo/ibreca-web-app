@@ -1,0 +1,44 @@
+.header-icon {
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .header-icon:hover {
+    color: #1890ff;
+  }
+
+  .header-icon.trigger {
+    font-size: 20px;
+    padding: 0 24px;
+  }
+  
+.logo {
+  height: 32px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.site-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+  .site-layout .site-layout-background {
+    background: #fff;
+  }
+
+  .site-layout .ant-layout-header {
+    margin: 0px;
+    padding: 0px;
+  }
+
+  .site-layout .site-layout-pageheader {
+    margin: 16px;
+  }
+  
+  .site-layout .ant-layout-content {
+    overflow-y: auto;
+    margin: 0px 16px 16px 16px;
+    padding: 24px;
+  }

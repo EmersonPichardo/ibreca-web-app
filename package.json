@@ -6,14 +6,18 @@
     "@testing-library/jest-dom": "^5.16.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "antd": "^4.17.2",
+    "env-cmd": "^10.1.0",
+    "moment": "^2.29.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
+    "react-router-dom": "^6.0.2",
+    "react-scripts": "^4.0.3",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "env-cmd -e development react-scripts start",
+    "build": "env-cmd -e production react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
