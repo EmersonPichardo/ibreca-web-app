@@ -107,7 +107,6 @@ typings/
 .env.test.local
 .env.production.local
 .env.*
-.env-cmdrc.json
 
 npm-debug.log*
 yarn-debug.log*
