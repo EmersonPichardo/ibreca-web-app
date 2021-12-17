@@ -15,30 +15,39 @@
   
 .logo {
   height: 32px;
-  margin: 16px;
+  margin: 14px;
   background: rgba(255, 255, 255, 0.3);
 }
 
-.site-layout {
-  height: 100vh;
-  overflow: hidden;
+.ant-menu-submenu-selected {
+  background-color: #1890ff !important;
 }
 
-  .site-layout .site-layout-background {
-    background: #fff;
-  }
+.fast-out .ant-menu-item,
+.fast-out .ant-menu-submenu-title {
+  transition: border-color 0.3s, background 0.3s, padding 0.3s cubic-bezier(0.075, 0.82, 0.165, 1) !important;
+}
 
-  .site-layout .ant-layout-header {
-    margin: 0px;
-    padding: 0px;
-  }
+.site-layout {
+	height: 100vh;
+	overflow: hidden;
+}
 
-  .site-layout .site-layout-pageheader {
-    margin: 16px;
-  }
+	.site-layout .site-layout-background {
+		background: #fff;
+	}
   
-  .site-layout .ant-layout-content {
-    overflow-y: auto;
-    margin: 0px 16px 16px 16px;
-    padding: 24px;
-  }
+	.site-layout .ant-layout-header {
+		margin: 0px;
+		padding: 0px;
+	}
+
+	.site-layout .site-layout-pageheader {
+		margin: 16px;
+	}
+	
+	.site-layout .ant-layout-content {
+		overflow-y: auto;
+		margin: 0px 16px 16px 16px;
+		padding: 24px;
+	}

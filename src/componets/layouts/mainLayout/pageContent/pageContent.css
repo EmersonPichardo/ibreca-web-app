@@ -1,0 +1,16 @@
+.ant-page-header-heading {
+    align-items: center;
+}
+
+.ant-page-header-heading-left {
+    align-items: baseline !important;
+}
+
+.ant-page-header-heading-left .ant-page-header-back {
+    align-self: center;
+    margin-right: 24px;
+}
+
+.ant-page-header-heading-left .ant-page-header-heading-title{
+    font-size: 24px;
+}

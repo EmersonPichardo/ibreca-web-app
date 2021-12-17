@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, Outlet } from "react-router-dom";
+import React, { useContext, useState } from 'react';
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 import { Layout, Menu, Typography, Row, Col, Space, Divider, Badge, Dropdown } from 'antd';
 import {
@@ -9,35 +9,40 @@ import {
     UserOutlined,
     PoweroffOutlined,
     HomeOutlined,
-    ShopOutlined,
-    ShoppingOutlined,
-    TagsOutlined,
-    TeamOutlined,
-    OrderedListOutlined
+    NotificationOutlined,
+    PicLeftOutlined
 } from '@ant-design/icons';
+
+import { PageContext } from '../../../contexts/pageContext';
+import PageContent from './pageContent/pageContent';
 
 import './mainLayout.css';
 
+const { createElement } = React;
 const { Header, Sider } = Layout;
+const { SubMenu, Item } = Menu;
 const { Text } = Typography;
 
 export default function MainLayout() {
-    let [collapsed, setCollapsed] = useState(false);
+    const { currentPage } = useContext(PageContext);
+    const { pathname } = useLocation();
 
-    function toggle() {
+    const [collapsed, setCollapsed] = useState(false);
+
+    const toggle = () => {
         setCollapsed(!collapsed);
     }
 
     const menu = (
         <Menu>
-            <Menu.Item key="0">
-                <Space size="large">
-                    <Text type="danger"><PoweroffOutlined /></Text>
-                    <a href="/login">
+            <Item key="logout">
+                <Link to="login">
+                    <Space>
+                        <Text type="danger"><PoweroffOutlined /></Text>
                         <Text type="danger">Cerrar sesión</Text>
-                    </a>
-                </Space>
-            </Menu.Item>
+                    </Space>
+                </Link>
+            </Item>
         </Menu>
     );
 
@@ -45,44 +50,37 @@ export default function MainLayout() {
         <Layout>
             <Sider trigger={null} collapsible collapsed={collapsed}>
                 <div className="logo" />
-                <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-                    <Menu.Item key="1" icon={<HomeOutlined />}>
+                <Menu theme="dark" mode="vertical" defaultSelectedKeys={[pathname]} className={collapsed || "fast-out"}>
+                    <Item key="/" icon={<HomeOutlined />}>
                         <Link to="/">inicio</Link>
-                    </Menu.Item>
-                    <Menu.Item key="2" icon={<ShopOutlined />}>
-                        <Link to="/sucursales">Sucursales</Link>
-                    </Menu.Item>
-                    <Menu.Item key="3" icon={<ShoppingOutlined />}>
-                        <Link to="/proveedores">Proveedores</Link>
-                    </Menu.Item>
-                    <Menu.Item key="4" icon={<TagsOutlined />}>
-                        <Link to="/productos">Productos</Link>
-                    </Menu.Item>
-                    <Menu.Item key="5" icon={<TeamOutlined />}>
-                        <Link to="/usuarios">Usuarios</Link>
-                    </Menu.Item>
-                    <Menu.Item key="6" icon={<OrderedListOutlined />}>
-                        <Link to="/inventario">Inventario</Link>
-                    </Menu.Item>
+                    </Item>
+                    <SubMenu key="blog" icon={<NotificationOutlined />} title="Blog">
+                        <Item key="/blog/entries" icon={<PicLeftOutlined />}>
+                            <Link to="blog/entries">Entradas</Link>
+                        </Item>
+                    </SubMenu>
                 </Menu>
             </Sider>
             <Layout className="site-layout">
                 <Header className="site-layout-background">
                     <Row justify="space-between">
-                        <Col span={8}>
-                            {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
+                        <Col span={4}>
+                            {createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
                                 className: 'header-icon trigger',
                                 onClick: toggle,
                             })}
                         </Col>
-                        <Col span={8} style={{ textAlign: 'right', paddingRight: '16px' }}>
+                        <Col span={14} style={{ textAlign: 'right', paddingRight: '16px' }}>
                             <Space split={<Divider type="vertical" />}>
                                 <Badge dot>
                                     <BellOutlined className="header-icon" />
                                 </Badge>
-                                <Dropdown overlay={menu}>
-                                    <span className="header-icon"><UserOutlined />
-                                        <span style={{ padding: '0px 24px 0px 6px' }}>{JSON.parse(localStorage.getItem('sesion'))?.name || 'Desconocido'}</span>
+                                <Dropdown overlay={menu} trigger={['click']}>
+                                    <span className="header-icon">
+                                        <UserOutlined />
+                                        <span style={{ padding: '0px 24px 0px 6px' }}>
+                                            {JSON.parse(localStorage.getItem('sesion'))?.name || 'Desconocido'}
+                                        </span>
                                     </span>
                                 </Dropdown>
                             </Space>
@@ -90,7 +88,9 @@ export default function MainLayout() {
                     </Row>
                 </Header>
 
-                <Outlet />
+                <PageContent title={currentPage.title} subtitle={currentPage.subtitle} extra={currentPage.extra} onBack={currentPage.onBack}>
+                    <Outlet />
+                </PageContent>
             </Layout>
         </Layout>
     )

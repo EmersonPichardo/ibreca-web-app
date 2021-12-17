@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 
 import { Typography, Form, Input, Divider, Button, message } from 'antd';
+
+import LoginService from '../../services/apiServices/loginService';
 
 import './login.css';
 
@@ -22,9 +24,7 @@ export default function Login() {
     const onFinish = (values) => {
         setLoading(true);
 
-        const config = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) }
-
-        fetch(`${process.env.REACT_APP_API_URL}/login`, config)
+        LoginService.Login(values)
             .then(response => {
                 if (response.ok) {
                     response.json().then(sesion => {
@@ -84,11 +84,9 @@ export default function Login() {
                 <Divider />
 
                 <Item style={{ textAlign: 'center' }}>
-                    <React.StrictMode>
-                        <Button type="primary" size="large" htmlType="submit" loading={loading}>
-                            Iniciar sesión
-                        </Button>
-                    </React.StrictMode>
+                    <Button type="primary" size="large" htmlType="submit" loading={loading}>
+                        Iniciar sesión
+                    </Button>
                 </Item>
             </Form>
         </div>

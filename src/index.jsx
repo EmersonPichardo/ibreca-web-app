@@ -1,12 +1,14 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import PageContextProvider from './contexts/pageContext';
 
 import LoginLayout from './componets/layouts/loginLayout/loginLayout';
 import Login from './pages/login/login';
 
 import MainLayout from './componets/layouts/mainLayout/mainLayout';
 import Home from './pages/home/home';
+import BlogEntriesForm from './pages/blogEntries/form/blogEntriesForm';
 
 import NotFound from './pages/notFound/notFound';
 
@@ -16,21 +18,20 @@ import 'antd/dist/antd.css';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Home />} />
-        </Route>
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<PageContextProvider element={<MainLayout />} />}>
+        <Route index element={<Home />} />
+        <Route path="/blog/entries" element={<BlogEntriesForm />} />
+      </Route>
 
-        <Route path="login" element={<LoginLayout />}>
-          <Route index element={<Login />} />
-        </Route>
+      <Route path="login" element={<LoginLayout />}>
+        <Route index element={<Login />} />
+      </Route>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>,
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </BrowserRouter>,
   document.getElementById('root')
 );
 
