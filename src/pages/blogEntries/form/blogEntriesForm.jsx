@@ -1,45 +1,51 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 
-import { Row, Typography, Col, Form, Input, Affix, Button, message } from 'antd';
-import { CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
+import { Row, Col, Form, Input, Radio, Button, message, BackTop } from 'antd';
+import { SaveOutlined } from '@ant-design/icons';
 
 import { PageContext } from '../../../contexts/pageContext';
 import BlogEntriesService from '../../../services/apiServices/blogEntriesService';
+import Player, { DefaultPlayer } from '../../../componets/player/player';
+import ImageDisplayer, { CanDisplay } from '../../../componets/imagedisplayer/imagedisplayer';
 
 import './blogEntriesForm.css';
 
-const { Title } = Typography;
 const { Item } = Form;
+const { TextArea } = Input;
 
 export default function BlogEntriesForm() {
     const { setCurrentPage } = useContext(PageContext);
     const { id } = useParams();
-    const navigate = useNavigate();
     const [form] = Form.useForm();
+    const navigate = useNavigate();
 
-    let [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [coverurl, setCoverurl] = useState();
+    const [headerurl, setHeaderurl] = useState();
+
+    useEffect(() => {
+        setCurrentPage({
+            breadcrumb: [
+                { path: '/', breadcrumbName: 'Inicio' },
+                { breadcrumbName: 'Blog' },
+                { path: '/blog/entries', breadcrumbName: 'Entradas' },
+                { breadcrumbName: `${id ? 'Editar' : 'Agregar'} entrada` }
+            ],
+            title: `${id ? 'Editar' : 'Agregar'} entrada`,
+            extra: [
+                <Button key="submit" type="primary" size="large" icon={<SaveOutlined />} loading={loading} onClick={form.submit}>
+                    Guardar
+                </Button>
+            ],
+            onBack: () => navigate('/blog/entries')
+        });
+    }, [loading]);
 
     useEffect(() => {
         if (id) { setEditModeForm(id); }
         else { setLoading(false); }
     }, [])
-
-    useEffect(() => {
-        setCurrentPage({
-            title: "Blog",
-            subtitle: "Entradas",
-            extra: [
-                <Button key="cancel" icon={<CloseCircleOutlined />} danger ghost onClick={() => navigate(-1)}>
-                    Cancelar
-                </Button>,
-                <Button key="submit" type="primary" size="large" icon={<SaveOutlined />} loading={loading} onClick={form.submit}>
-                    Guardar
-                </Button>
-            ],
-            onBack: () => navigate('/blog')
-        });
-    }, [loading]);
 
     const setEditModeForm = (id) => {
         BlogEntriesService.Get(id)
@@ -47,6 +53,8 @@ export default function BlogEntriesForm() {
                 response.json().then(data => {
                     if (response.ok) {
                         form.setFieldsValue(data);
+                        setCoverurl(data.coverUrl);
+                        setHeaderurl(data.headerUrl);
                         setLoading(false);
                     } else {
                         message.error(data.title);
@@ -65,9 +73,8 @@ export default function BlogEntriesForm() {
             .then(response => {
                 if (response.ok) {
                     message.success('Cambios guardados');
-                    navigate('/blog');
+                    navigate('/blog/entries');
                 } else {
-                    console.log(response)
                     response.json().then(error => {
                         message.error(error.title);
                         setLoading(false);
@@ -81,80 +88,90 @@ export default function BlogEntriesForm() {
     };
 
     return (<>
-        <Affix target={() => document.getElementById('container')}>
-            <Title level={4} className="form-title">{id ? 'Editar entrada' : 'Agregar entrada'}</Title>
-        </Affix>
-
         <Form
             form={form}
             layout="vertical"
             onFinish={onFinish}
             autoComplete="off"
-            style={{ marginTop: '48px' }}
+            initialValues={{
+                status: 'private'
+            }}
+            validateMessages={{
+                required: 'Este campo es requerido',
+                string: {
+                    max: 'Este campo debe tener menos de ${max} caracteres'
+                }
+            }}
         >
-            <Row gutter={[32, 24]}>
-                <Col span={8}>
-                    <Item label="Título" name="title"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Este campo es requerido',
-                            },
-                        ]}
-                        hasFeedback>
+            <Row gutter={[32, 24]} justify="center" align="middle">
+                <Col xs={24} md={14} lg={16} xl={18}>
+                    <Item label="Título" name="title" rules={[{ required: true, max: 100 }]} hasFeedback>
                         <Input disabled={loading} />
                     </Item>
                 </Col>
 
-                <Col span={8}>
-                    <Item label="Cover" name="coverurl"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Este campo es requerido',
-                            },
-                        ]}
-                        hasFeedback>
-                        <Input disabled={loading} />
+                <Col xs={24} md={10} lg={8} xl={6}>
+                    <Item label="Estado" name="status" rules={[{ required: true }]}>
+                        <Radio.Group buttonStyle="solid" disabled={loading}>
+                            <Radio.Button danger ghost value="private">Privado</Radio.Button>
+                            <Radio.Button value="public">Público</Radio.Button>
+                        </Radio.Group>
                     </Item>
                 </Col>
 
-                <Col span={8}>
-                    <Item label="URL" name="headerurl"
+                <Col xs={24} sm={14} md={16} lg={17} xl={7}>
+                    <Item label="Cover" name="coverUrl"
                         rules={[
+                            { required: true },
+                            { max: 256 },
                             {
-                                required: true,
-                                message: 'Este campo es requerido',
-                            },
+                                validator: (_, value) => {
+                                    if (!value) return Promise.resolve();
+                                    return CanDisplay(value)
+                                        .then(
+                                            () => Promise.resolve(),
+                                            () => Promise.reject('Imagen no encontrada')
+                                        );
+                                }
+                            }
                         ]}
-                        hasFeedback>
-                        <Input disabled={loading} />
+                        hasFeedback={form.getFieldValue('coverUrl')}
+                    >
+                        <Input disabled={loading} onChange={(event) => setCoverurl(event.target.value)} />
                     </Item>
                 </Col>
 
-                <Col span={8}>
-                    <Item label="Cuerpo" name="body"
+                <Col xs={24} sm={10} md={8} lg={7} xl={5}>
+                    <ImageDisplayer src={coverurl} />
+                </Col>
+
+                <Col xs={24} sm={14} md={16} lg={17} xl={7}>
+                    <Item label="Cabecera" name="headerUrl"
                         rules={[
+                            { max: 256 },
                             {
-                                required: true,
-                                message: 'Este campo es requerido',
-                            },
+                                validator: (_, value) => {
+                                    if (!value || DefaultPlayer.canPlay(value)) {
+                                        return Promise.resolve();
+                                    } else {
+                                        return Promise.reject('URL incompatible');
+                                    }
+                                }
+                            }
                         ]}
-                        hasFeedback>
-                        <Input disabled={loading} />
+                        hasFeedback={form.getFieldValue('headerUrl')}
+                    >
+                        <Input disabled={loading} onChange={(event) => setHeaderurl(event.target.value)} />
                     </Item>
                 </Col>
 
-                <Col span={8}>
-                    <Item label="Estado" name="status"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Este campo es requerido',
-                            },
-                        ]}
-                        hasFeedback>
-                        <Input disabled={loading} />
+                <Col xs={24} sm={10} md={8} lg={7} xl={5}>
+                    <Player url={headerurl} />
+                </Col>
+
+                <Col xs={24} md={20} lg={18} xl={15}>
+                    <Item label="Cuerpo" name="body" rules={[{ required: true }]}>
+                        <TextArea autoSize={{ minRows: 6 }} disabled={loading} />
                     </Item>
                 </Col>
             </Row>

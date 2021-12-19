@@ -8,6 +8,7 @@ import Login from './pages/login/login';
 
 import MainLayout from './componets/layouts/mainLayout/mainLayout';
 import Home from './pages/home/home';
+import BlogEntriesList from './pages/blogEntries/list/blogEntriesList';
 import BlogEntriesForm from './pages/blogEntries/form/blogEntriesForm';
 
 import NotFound from './pages/notFound/notFound';
@@ -22,7 +23,9 @@ ReactDOM.render(
     <Routes>
       <Route path="/" element={<PageContextProvider element={<MainLayout />} />}>
         <Route index element={<Home />} />
-        <Route path="/blog/entries" element={<BlogEntriesForm />} />
+        <Route path="/blog/entries" element={<BlogEntriesList />} />
+        <Route path="/blog/entries/add" element={<BlogEntriesForm />} />
+        <Route path="/blog/entries/edit/:id" element={<BlogEntriesForm />} />
       </Route>
 
       <Route path="login" element={<LoginLayout />}>

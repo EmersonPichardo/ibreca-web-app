@@ -2,3 +2,12 @@
     background-color: white;
     line-height: 48px;
 }
+
+.ant-radio-group {
+    display: flex !important;
+    flex-wrap: nowrap;
+}
+
+.ant-radio-button-wrapper {
+    width: 100%;
+}

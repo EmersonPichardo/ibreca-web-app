@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 import { Layout, Menu, Typography, Row, Col, Space, Divider, Badge, Dropdown } from 'antd';
@@ -13,7 +13,6 @@ import {
     PicLeftOutlined
 } from '@ant-design/icons';
 
-import { PageContext } from '../../../contexts/pageContext';
 import PageContent from './pageContent/pageContent';
 
 import './mainLayout.css';
@@ -24,10 +23,9 @@ const { SubMenu, Item } = Menu;
 const { Text } = Typography;
 
 export default function MainLayout() {
-    const { currentPage } = useContext(PageContext);
     const { pathname } = useLocation();
 
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(true);
 
     const toggle = () => {
         setCollapsed(!collapsed);
@@ -70,7 +68,7 @@ export default function MainLayout() {
                                 onClick: toggle,
                             })}
                         </Col>
-                        <Col span={14} style={{ textAlign: 'right', paddingRight: '16px' }}>
+                        <Col span={20} style={{ textAlign: 'right', paddingRight: '16px' }}>
                             <Space split={<Divider type="vertical" />}>
                                 <Badge dot>
                                     <BellOutlined className="header-icon" />
@@ -88,7 +86,7 @@ export default function MainLayout() {
                     </Row>
                 </Header>
 
-                <PageContent title={currentPage.title} subtitle={currentPage.subtitle} extra={currentPage.extra} onBack={currentPage.onBack}>
+                <PageContent>
                     <Outlet />
                 </PageContent>
             </Layout>

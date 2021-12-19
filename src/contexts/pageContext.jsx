@@ -6,8 +6,7 @@ export default function PageContextProvider(props) {
     const [page, setPage] = useState({});
 
     const setCurrentPage = (config) => {
-        const { title, subtitle, extra, onBack } = config;
-        setPage({ title, subtitle, extra, onBack });
+        setPage(config);
     }
 
     return (
