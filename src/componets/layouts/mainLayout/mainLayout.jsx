@@ -59,29 +59,25 @@ export default function MainLayout() {
                     </SubMenu>
                 </Menu>
             </Sider>
+
             <Layout className="site-layout">
                 <Header className="site-layout-background">
                     <Row justify="space-between">
-                        <Col span={4}>
+                        <Col xs={collapsed ? 8 : 24} xl={3}>
                             {createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
                                 className: 'header-icon trigger',
                                 onClick: toggle,
                             })}
                         </Col>
-                        <Col span={20} style={{ textAlign: 'right', paddingRight: '16px' }}>
-                            <Space split={<Divider type="vertical" />}>
-                                <Badge dot>
-                                    <BellOutlined className="header-icon" />
-                                </Badge>
-                                <Dropdown overlay={menu} trigger={['click']}>
-                                    <span className="header-icon">
-                                        <UserOutlined />
-                                        <span style={{ padding: '0px 24px 0px 6px' }}>
-                                            {JSON.parse(localStorage.getItem('sesion'))?.name || 'Desconocido'}
-                                        </span>
+                        <Col xs={collapsed ? 16 : 0} xl={21} style={{ textAlign: 'right', paddingRight: '16px' }}>
+                            <Dropdown overlay={menu} trigger={['click']}>
+                                <span className="header-icon">
+                                    <UserOutlined />
+                                    <span style={{ padding: '0px 24px 0px 6px' }}>
+                                        {JSON.parse(localStorage.getItem('sesion'))?.name || 'Desconocido'}
                                     </span>
-                                </Dropdown>
-                            </Space>
+                                </span>
+                            </Dropdown>
                         </Col>
                     </Row>
                 </Header>

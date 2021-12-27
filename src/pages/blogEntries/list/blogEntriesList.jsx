@@ -79,7 +79,7 @@ export default function BlogEntriesList() {
             BlogEntriesService.Delete(id)
                 .then(response => {
                     if (response.ok) {
-                        setTimeout(() => setEntries(entries.filter(entry => entry.id != id)), 0);
+                        setTimeout(() => setEntries(entries.filter(entry => entry.id !== id)), 0);
                         message.success('Publicación eliminada');
                         resolve();
                     } else {

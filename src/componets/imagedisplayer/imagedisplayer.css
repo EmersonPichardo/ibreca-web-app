@@ -10,6 +10,7 @@
 .result-wrapper {
   background-color: #f0f2f5;
   border-radius: 2px;
+  padding: 8px;
   width: 100% !important;
   display: flex !important;
   align-items: center;
