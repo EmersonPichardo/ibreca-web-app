@@ -1,3 +1,9 @@
+
+.site-layout-pageheader {
+  margin: 16px !important;
+  margin-bottom: 0px !important;
+}
+
 .ant-page-header-heading {
   align-items: center;
 }
@@ -22,4 +28,25 @@
   .ant-back-top .backtop {
     background-color: white !important;
     box-shadow: 0 1px 2px -2px rgb(0 0 0 / 16%), 0 3px 6px 0 rgb(0 0 0 / 12%), 0 5px 12px 4px rgb(0 0 0 / 9%);
+  }
+
+.description {
+  position: relative;
+  filter: opacity(1);
+  overflow: hidden;
+  transition: all 0.5s;
+}
+
+  .description.collapsed {
+    max-height: 0px !important;
+    filter: opacity(0);
+  }
+
+.collapse-buttom {
+  margin-top: 16px;
+  transition: all 0.5s;
+}
+
+  .collapse-buttom.collapsed {
+    margin-top: 0px;
   }

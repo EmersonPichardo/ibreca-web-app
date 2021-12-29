@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Button, Card, Col, DatePicker, Divider, Form, Input, message, Popconfirm, Result, Row, Typography } from "antd";
-import { PlusOutlined, CloseCircleOutlined, InboxOutlined } from '@ant-design/icons';
+import { PlusOutlined, CloseCircleOutlined, InboxOutlined, CaretUpOutlined, CaretDownOutlined } from '@ant-design/icons';
 import moment from "moment";
 import 'moment/locale/es';
 import locale from 'antd/es/date-picker/locale/es_ES';
@@ -42,8 +42,19 @@ export default function BlogEntriesList() {
                     <Button type="primary" size="large" icon={<PlusOutlined />}>Agregar</Button>
                 </Link>
             ],
-            description: filterForm
-
+            description: filterForm,
+            collapseOptions: {
+                onCollapse: {
+                    name: 'Mostrar filtros',
+                    icon: <CaretDownOutlined />
+                },
+                onShow: {
+                    name: 'Ocultar filtros',
+                    icon: <CaretUpOutlined />,
+                    height: 32
+                },
+                isCollapse: true
+            }
         });
 
         return () => {

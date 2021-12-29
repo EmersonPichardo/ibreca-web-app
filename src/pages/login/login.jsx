@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 
 import { Typography, Form, Input, Divider, Button, message } from 'antd';
 
+import { SecurityContext } from '../../contexts/securityContext';
 import LoginService from '../../services/apiServices/loginService';
 
 import './login.css';
@@ -12,14 +13,13 @@ const { Item } = Form;
 const { Password } = Input;
 
 export default function Login() {
+    const { setSesion, logout, callbackRoute } = useContext(SecurityContext);
     let navigate = useNavigate();
     const [form] = Form.useForm();
 
     let [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        localStorage.removeItem('sesion');
-    }, []);
+    useEffect(() => { logout() }, []);
 
     const onFinish = (values) => {
         setLoading(true);
@@ -28,8 +28,8 @@ export default function Login() {
             .then(response => {
                 if (response.ok) {
                     response.json().then(sesion => {
-                        localStorage.setItem('sesion', JSON.stringify(sesion));
-                        navigate('/');
+                        setSesion(sesion);
+                        navigate(callbackRoute);
                     })
                 } else {
                     response.json().then(error => {

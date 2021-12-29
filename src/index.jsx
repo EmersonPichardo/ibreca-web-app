@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import SecurityContextProvider from './contexts/securityContext';
 import PageContextProvider from './contexts/pageContext';
 
 import LoginLayout from './componets/layouts/loginLayout/loginLayout';
@@ -16,19 +17,21 @@ import NotFound from './pages/notFound/notFound';
 import './index.css';
 import 'antd/dist/antd.css';
 
-import reportWebVitals from './reportWebVitals';
-
 ReactDOM.render(
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<PageContextProvider element={<MainLayout />} />}>
+      <Route path="/" element={
+        <SecurityContextProvider element={
+          <PageContextProvider element={<MainLayout />} />
+        } />
+      }>
         <Route index element={<Home />} />
         <Route path="/blog/entries" element={<BlogEntriesList />} />
         <Route path="/blog/entries/add" element={<BlogEntriesForm />} />
         <Route path="/blog/entries/edit/:id" element={<BlogEntriesForm />} />
       </Route>
 
-      <Route path="login" element={<LoginLayout />}>
+      <Route path="login" element={<SecurityContextProvider element={<LoginLayout />} />}>
         <Route index element={<Login />} />
       </Route>
 
@@ -37,8 +40,3 @@ ReactDOM.render(
   </BrowserRouter>,
   document.getElementById('root')
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
