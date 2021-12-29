@@ -53,7 +53,7 @@ export default function BlogEntriesList() {
                     icon: <CaretUpOutlined />,
                     height: 32
                 },
-                isCollapse: true
+                isCollapsed: true
             }
         });
 

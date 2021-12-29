@@ -38,7 +38,7 @@ export default function MainLayout() {
             return navigate('/login');
         }
 
-        LoginService.IsValidToken(getSesion()?.token)
+        LoginService.IsValidToken()
             .then(response => {
                 if (response.status == 401) {
                     message.error('Sesión agotada');
@@ -105,7 +105,7 @@ export default function MainLayout() {
                                 <span className="header-icon">
                                     <UserOutlined />
                                     <span style={{ padding: '0px 24px 0px 6px' }}>
-                                            {getSesion()?.name}
+                                        {getSesion()?.name}
                                     </span>
                                 </span>
                             </Dropdown>

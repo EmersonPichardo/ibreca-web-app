@@ -4,7 +4,7 @@ const url = 'login';
 
 const LoginService = {
     Login: (credentials) => Send('post', url, credentials),
-    IsValidToken: (token) => Send('get', url, undefined, { token })
+    IsValidToken: () => Send('get', url)
 }
 
 export default LoginService;

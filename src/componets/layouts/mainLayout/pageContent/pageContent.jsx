@@ -13,10 +13,13 @@ const { Content } = Layout;
 export default function PageContent(props) {
     const { currentPage } = useContext(PageContext);
     const { breadcrumb, title, subtitle, extra, onBack, description, collapseOptions } = currentPage;
-    const { onCollapse, onShow, isCollapse } = collapseOptions ?? {};
-    const ref = useRef();
+    const { onCollapse, onShow, isCollapsed } = collapseOptions ?? {};
 
-    const [collapse, setCollase] = useState(isCollapse ?? false);
+    const [collapse, setCollase] = useState(isCollapsed);
+
+    useEffect(() => {
+        setCollase(isCollapsed);
+    }, [isCollapsed])
 
     return (<>
         <PageHeader
@@ -28,19 +31,20 @@ export default function PageContent(props) {
             subTitle={subtitle}
             extra={extra}
         >
-            <div
-                ref={ref}
-                className={`description ${collapse ? 'collapsed' : ''}`}
-                style={{ maxHeight: onShow?.height ?? 32 }}>
-                {description}
-            </div>
-            <Button type="link" size="small"
-                className={`collapse-buttom ${collapse ? 'collapsed' : ''}`}
-                icon={collapse ? (onCollapse?.icon ?? <EyeOutlined />) : (onShow?.icon ?? <EyeInvisibleOutlined />)}
-                onClick={() => setCollase(!collapse)}
-            >
-                {collapse ? (onCollapse?.name ?? 'Mostrar') : (onShow?.name ?? 'Ocultar')}
-            </Button>
+            {!description ? <></> : <>
+                <div
+                    className={`description ${collapse ? 'collapsed' : ''}`}
+                    style={{ maxHeight: onShow?.height ?? 32 }}>
+                    {description}
+                </div>
+                <Button type="link" size="small"
+                    className={`collapse-buttom ${collapse ? 'collapsed' : ''}`}
+                    icon={collapse ? (onCollapse?.icon ?? <EyeOutlined />) : (onShow?.icon ?? <EyeInvisibleOutlined />)}
+                    onClick={() => setCollase(!collapse)}
+                >
+                    {collapse ? (onCollapse?.name ?? 'Mostrar') : (onShow?.name ?? 'Ocultar')}
+                </Button>
+            </>}
         </PageHeader>
 
         <Content id="container" className="site-layout-background">
