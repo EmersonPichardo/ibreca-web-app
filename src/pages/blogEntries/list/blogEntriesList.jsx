@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Button, Card, Col, DatePicker, Divider, Form, Input, message, Popconfirm, Result, Row, Typography } from "antd";
-import { PlusOutlined, CloseCircleOutlined, InboxOutlined, CaretUpOutlined, CaretDownOutlined } from '@ant-design/icons';
+import { Badge, Button, Card, Col, DatePicker, Divider, Empty, Form, Grid, Input, message, Popconfirm, Radio, Row, Typography } from "antd";
+import { PlusOutlined, CloseCircleOutlined, CaretUpOutlined, CaretDownOutlined, SearchOutlined } from '@ant-design/icons';
 import moment from "moment";
 import 'moment/locale/es';
 import locale from 'antd/es/date-picker/locale/es_ES';
@@ -14,9 +14,11 @@ import ImageDisplayer from "../../../componets/imagedisplayer/imagedisplayer";
 
 import './blogEntriesList.css';
 
+const { Ribbon } = Badge;
 const { Meta } = Card;
 const { Text, Paragraph, Title } = Typography;
 const { Item } = Form;
+const { useBreakpoint } = Grid;
 
 let index = undefined;
 moment.locale('es');
@@ -24,10 +26,12 @@ moment.locale('es');
 export default function BlogEntriesList() {
     const { setCurrentPage } = useContext(PageContext);
     const [form] = Form.useForm();
+    const screens = useBreakpoint();
 
     const [entries, setEntries] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [filters, setFilters] = useState({});
 
     useEffect(() => {
         setCurrentPage({
@@ -42,7 +46,7 @@ export default function BlogEntriesList() {
                     <Button type="primary" size="large" icon={<PlusOutlined />}>Agregar</Button>
                 </Link>
             ],
-            description: filterForm,
+            description: (filterForm),
             collapseOptions: {
                 onCollapse: {
                     name: 'Mostrar filtros',
@@ -51,21 +55,23 @@ export default function BlogEntriesList() {
                 onShow: {
                     name: 'Ocultar filtros',
                     icon: <CaretUpOutlined />,
-                    height: 32
-                },
-                isCollapsed: true
+                    height: screens['lg'] ? 40 : (screens['md'] ? 80 : 160)
+                }
             }
         });
+    }, [screens['lg'], screens['md']]);
 
-        return () => {
-            clearTimeout(index);
-        }
-    }, []);
+    useEffect(() => {
+        getMoreEntries();
 
-    const getMoreEntries = (search, from, to) => {
+        return () => clearTimeout(index)
+    }, [filters])
+
+    const getMoreEntries = () => {
+        const { search, status, from, to } = filters;
         setPage(page + 1);
 
-        BlogEntriesService.GetPage(page, search, from, to)
+        BlogEntriesService.GetPage(page, status, search, from, to)
             .then(response => {
                 response.json().then(data => {
                     if (response.ok) {
@@ -80,10 +86,6 @@ export default function BlogEntriesList() {
                 message.error(error.message);
             });
     }
-
-    useEffect(() => {
-        getMoreEntries();
-    }, []);
 
     const remove = (id) => {
         return new Promise((resolve, reject) => {
@@ -107,15 +109,42 @@ export default function BlogEntriesList() {
         })
     }
 
+    const translate = (status) => {
+        switch (status) {
+            case 'private':
+                return 'Privado'
+
+            case 'public':
+                return 'Público'
+
+            default:
+                return '';
+        }
+    }
+
+    const getColor = (status) => {
+        switch (status) {
+            case 'private':
+                return 'red'
+
+            case 'public':
+                return '#108ee9'
+
+            default:
+                return '';
+        }
+    }
+
     const filterData = (values) => {
         clearTimeout(index);
 
         index = setTimeout(() => {
-            const { search, from, to } = values;
-
-            setPage(0);
+            setHasMore(true);
             setEntries([]);
-            getMoreEntries(search, from?.toJSON(), to?.toJSON());
+            setPage(0);
+
+            const { search, status, from, to } = values;
+            setFilters({ search, status, from: from?.toJSON(), to: to?.toJSON() });
         }, 500);
     }
 
@@ -123,18 +152,37 @@ export default function BlogEntriesList() {
         <Form
             form={form}
             autoComplete="off"
+            initialValues={{
+                status: undefined
+            }}
             onFinish={filterData}
         >
-            <Row gutter={[32, 0]} justify="center" align="middle">
-                <Col xs={24} md={24} lg={8}>
-                    <Item label="Buscar" name="search">
-                        <Input onChange={form.submit} allowClear />
+            <Row gutter={[8, 8]} justify="center" align="middle">
+                <Col xs={24} md={12} lg={6}>
+                    <Item name="search">
+                        <Input
+                            type="search"
+                            prefix={<SearchOutlined />}
+                            placeholder="Buscar"
+                            onChange={form.submit}
+                            allowClear
+                        />
                     </Item>
                 </Col>
-                <Col xs={24} md={12} lg={8}>
-                    <Item label="Desde" name="from">
+                <Col xs={24} md={12} lg={6}>
+                    <Item name="status">
+                        <Radio.Group buttonStyle="solid" onChange={form.submit}>
+                            <Radio.Button value={undefined}>Todos</Radio.Button>
+                            <Radio.Button value="private">Privado</Radio.Button>
+                            <Radio.Button value="public">Público</Radio.Button>
+                        </Radio.Group>
+                    </Item>
+                </Col>
+                <Col xs={24} md={12} lg={6}>
+                    <Item name="from">
                         <DatePicker
                             className="date-picker"
+                            placeholder="Desde"
                             format="DD MMM YYYY"
                             locale={locale}
                             disabledDate={current => current > moment()}
@@ -142,10 +190,11 @@ export default function BlogEntriesList() {
                         />
                     </Item>
                 </Col>
-                <Col xs={24} md={12} lg={8}>
-                    <Item label="Hasta" name="to">
+                <Col xs={24} md={12} lg={6}>
+                    <Item name="to">
                         <DatePicker
                             className="date-picker"
+                            placeholder="Hasta"
                             format="DD MMM YYYY"
                             locale={locale}
                             disabledDate={current => current > moment()}
@@ -181,61 +230,63 @@ export default function BlogEntriesList() {
             }
             endMessage={
                 entries.length ? <></> : (
-                    <Result
-                        icon={<InboxOutlined />}
-                        title="No se encontraron resultados"
+                    <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="No se encontraron resultados"
                     />
                 )
             }
-            style={{ overflowX: 'hidden' }}
+            style={{ overflow: 'visible' }}
         >
             <Row gutter={[64, 0]}>
                 {entries.map(entry => {
                     return (
                         <Col xs={24} md={12} lg={8} xl={6} key={entry.id} style={{ marginBottom: '64px' }}>
-                            <Card
-                                hoverable
-                                cover={
+                            <Ribbon text={translate(entry.status)} color={getColor(entry.status)}>
+                                <Card
+                                    hoverable
+                                    cover={
+                                        <Link to={`/blog/entries/edit/${entry.id}`}>
+                                            <ImageDisplayer src={entry.coverUrl} />
+                                        </Link>
+                                    }
+                                >
                                     <Link to={`/blog/entries/edit/${entry.id}`}>
-                                        <ImageDisplayer src={entry.coverUrl} />
-                                    </Link>
-                                }
-                            >
-                                <Link to={`/blog/entries/edit/${entry.id}`}>
-                                    <Meta
-                                        description={
-                                            <Title level={5}>
-                                                <Paragraph ellipsis={{ rows: 3 }}>{entry.title}</Paragraph>
-                                            </Title>
-                                        }
-                                    />
-                                    <Text type="secondary">{moment(entry.publicationDate).format('DD MMM YYYY')}</Text>
-                                </Link>
-
-                                <Divider style={{ margin: '16px 0px' }} />
-
-                                <div className="card-actions">
-                                    <a href="/google.com" target="_blank">
-                                        <Button type="primary" size="small" ghost>Visitar</Button>
-                                    </a>
-
-                                    <Link to={`/blog/entries/edit/${entry.id}`}>
-                                        <Button type="primary" size="small">Editar</Button>
+                                        <Meta
+                                            description={
+                                                <Title level={5}>
+                                                    <Paragraph ellipsis={{ rows: 3 }}>{entry.title}</Paragraph>
+                                                </Title>
+                                            }
+                                        />
+                                        <Text type="secondary">{moment(entry.publicationDate).format('DD MMM YYYY')}</Text>
                                     </Link>
 
-                                    <Popconfirm
-                                        title="¿Desea eliminar esta publicación?"
-                                        icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-                                        onConfirm={() => remove(entry.id)}
-                                        okText="Eliminar"
-                                        okButtonProps={{ danger: "danger" }}
-                                        cancelText="No"
-                                        cancelButtonProps={{ type: "primary", ghost: "ghost" }}
-                                    >
-                                        <Button type="primary" size="small" danger>Eliminar</Button>
-                                    </Popconfirm>
-                                </div>
-                            </Card>
+                                    <Divider style={{ margin: '16px 0px' }} />
+
+                                    <div className="card-actions">
+                                        <a href="/google.com" target="_blank">
+                                            <Button type="primary" size="small" ghost>Visitar</Button>
+                                        </a>
+
+                                        <Link to={`/blog/entries/edit/${entry.id}`}>
+                                            <Button type="primary" size="small">Editar</Button>
+                                        </Link>
+
+                                        <Popconfirm
+                                            title="¿Desea eliminar esta publicación?"
+                                            icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+                                            onConfirm={() => remove(entry.id)}
+                                            okText="Eliminar"
+                                            okButtonProps={{ danger: "danger" }}
+                                            cancelText="No"
+                                            cancelButtonProps={{ type: "primary", ghost: "ghost" }}
+                                        >
+                                            <Button type="primary" size="small" danger>Eliminar</Button>
+                                        </Popconfirm>
+                                    </div>
+                                </Card>
+                            </Ribbon>
                         </Col>
                     );
                 })}

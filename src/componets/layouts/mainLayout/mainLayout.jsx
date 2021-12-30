@@ -94,13 +94,13 @@ export default function MainLayout() {
             <Layout className="site-layout">
                 <Header className="site-layout-background">
                     <Row justify="space-between">
-                        <Col xs={collapsed ? 8 : 24} xl={3}>
+                        <Col xs={collapsed ? 8 : 24} sm={5} xl={3}>
                             {createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
                                 className: 'header-icon trigger',
                                 onClick: toggle,
                             })}
                         </Col>
-                        <Col xs={collapsed ? 16 : 0} xl={21} style={{ textAlign: 'right', paddingRight: '16px' }}>
+                        <Col xs={collapsed ? 16 : 0} sm={19} xl={21} style={{ textAlign: 'right', paddingRight: '16px' }}>
                             <Dropdown overlay={menu} trigger={['click']}>
                                 <span className="header-icon">
                                     <UserOutlined />

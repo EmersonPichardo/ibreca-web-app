@@ -45,7 +45,7 @@ export default function ImageDisplayer(props) {
     }, [src])
 
     useEffect(() => {
-        window.addEventListener("resize", updateWidth);
+        window.addEventListener("resize", updateWidth, { capture: true, passive: true });
 
         return () => {
             window.removeEventListener("resize", updateWidth);
@@ -55,7 +55,6 @@ export default function ImageDisplayer(props) {
 
     useEffect(() => {
         setHeight(ref.current?.offsetWidth * 0.5625);
-
     }, [width]);
 
     const updateWidth = () => {
