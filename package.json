@@ -6,6 +6,7 @@
     "@testing-library/jest-dom": "^5.16.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "@tinymce/tinymce-react": "^3.13.0",
     "antd": "^4.17.2",
     "env-cmd": "^10.1.0",
     "moment": "^2.29.1",

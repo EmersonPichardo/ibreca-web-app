@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { Row, Col, Form, Input, Radio, Button, message } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
+import { Editor } from '@tinymce/tinymce-react';
 
 import { PageContext } from '../../../contexts/pageContext';
 import BlogEntriesService from '../../../services/apiServices/blogEntriesService';
@@ -12,7 +13,6 @@ import ImageDisplayer, { CanDisplay } from '../../../componets/imagedisplayer/im
 import './blogEntriesForm.css';
 
 const { Item } = Form;
-const { TextArea } = Input;
 
 export default function BlogEntriesForm() {
     const { setCurrentPage } = useContext(PageContext);
@@ -23,6 +23,7 @@ export default function BlogEntriesForm() {
     const [loading, setLoading] = useState(true);
     const [coverurl, setCoverurl] = useState();
     const [headerurl, setHeaderurl] = useState();
+    const [body, setBody] = useState();
 
     useEffect(() => {
         setCurrentPage({
@@ -55,6 +56,7 @@ export default function BlogEntriesForm() {
                         form.setFieldsValue(data);
                         setCoverurl(data.coverUrl);
                         setHeaderurl(data.headerUrl);
+                        setBody(data.body);
                         setLoading(false);
                     } else {
                         message.error(data.title);
@@ -67,8 +69,11 @@ export default function BlogEntriesForm() {
     }
 
     const onFinish = (values) => {
+        if (!body) return message.error("El cuerpo es requerido");
+
         setLoading(true);
 
+        values.body = body;
         (id ? BlogEntriesService.Edit(id, values) : BlogEntriesService.Create(values))
             .then(response => {
                 if (response.ok) {
@@ -170,9 +175,27 @@ export default function BlogEntriesForm() {
                 </Col>
 
                 <Col xs={24} md={20} lg={18} xl={15}>
-                    <Item label="Cuerpo" name="body" rules={[{ required: true }]}>
-                        <TextArea autoSize={{ minRows: 6 }} disabled={loading} />
-                    </Item>
+                    <div className="ant-col ant-form-item-label">
+                        <label className="ant-form-item-required">Cuerpo</label>
+                    </div>
+                    <Editor
+                        apiKey="jfzn77e77mliy3nhiwh8s5qq1v669czhlotxr057fr7jw75c"
+                        init={{
+                            height: 500,
+                            menubar: true,
+                            plugins: [
+                                'advlist autolink lists link image charmap print preview anchor',
+                                'searchreplace visualblocks code fullscreen',
+                                'insertdatetime media table paste code wordcount'
+                            ],
+                            toolbar: 'undo redo | formatselect | ' +
+                                'bold italic backcolor | alignleft aligncenter ' +
+                                'alignright alignjustify | bullist numlist outdent indent | ' +
+                                'removeformat'
+                        }}
+                        value={body}
+                        onEditorChange={(value) => setBody(value)}
+                    />
                 </Col>
             </Row>
         </Form>

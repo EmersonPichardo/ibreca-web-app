@@ -29,7 +29,7 @@ export default function BlogEntriesList() {
     const screens = useBreakpoint();
 
     const [entries, setEntries] = useState([]);
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [filters, setFilters] = useState({});
 
@@ -69,12 +69,12 @@ export default function BlogEntriesList() {
 
     const getMoreEntries = () => {
         const { search, status, from, to } = filters;
-        setPage(page + 1);
 
-        BlogEntriesService.GetPage(page, status, search, from, to)
+        BlogEntriesService.GetPage(page + 1, status, search, from, to)
             .then(response => {
                 response.json().then(data => {
                     if (response.ok) {
+                        setPage(page + 1);
                         setHasMore(data.hasMore);
                         setEntries([...entries, ...data.list]);
                     } else {
