@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { Layout, Menu, Typography, Row, Col, Space, Divider, Badge, Dropdown, message } from 'antd';
+import { Layout, Menu, Typography, Row, Col, Space, Dropdown, message } from 'antd';
 import {
     MenuUnfoldOutlined,
     MenuFoldOutlined,
-    BellOutlined,
     UserOutlined,
     PoweroffOutlined,
     HomeOutlined,
     NotificationOutlined,
-    PicLeftOutlined
+    PicLeftOutlined,
+    PictureOutlined
 } from '@ant-design/icons';
 
 import { SecurityContext } from '../../../contexts/securityContext';
@@ -88,6 +88,9 @@ export default function MainLayout() {
                             <Link to="blog/entries">Entradas</Link>
                         </Item>
                     </SubMenu>
+                    <Item key="announcements" icon={<PictureOutlined />}>
+                        <Link to="/announcements">Anuncios</Link>
+                    </Item>
                 </Menu>
             </Sider>
 

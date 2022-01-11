@@ -11,6 +11,8 @@ import MainLayout from './componets/layouts/mainLayout/mainLayout';
 import Home from './pages/home/home';
 import BlogEntriesList from './pages/blogEntries/list/blogEntriesList';
 import BlogEntriesForm from './pages/blogEntries/form/blogEntriesForm';
+import AnnouncementsList from './pages/announcements/list/announcementsList';
+import AnnouncementsForm from './pages/announcements/form/announcementsForm';
 
 import NotFound from './pages/notFound/notFound';
 
@@ -29,6 +31,9 @@ ReactDOM.render(
         <Route path="/blog/entries" element={<BlogEntriesList />} />
         <Route path="/blog/entries/add" element={<BlogEntriesForm />} />
         <Route path="/blog/entries/edit/:id" element={<BlogEntriesForm />} />
+        <Route path="/announcements" element={<AnnouncementsList />} />
+        <Route path="/announcements/add" element={<AnnouncementsForm />} />
+        <Route path="/announcements/edit/:id" element={<AnnouncementsForm />} />
       </Route>
 
       <Route path="login" element={<SecurityContextProvider element={<LoginLayout />} />}>

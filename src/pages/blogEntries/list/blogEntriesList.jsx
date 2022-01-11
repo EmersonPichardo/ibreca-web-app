@@ -30,6 +30,7 @@ export default function BlogEntriesList() {
 
     const [entries, setEntries] = useState([]);
     const [page, setPage] = useState(0);
+    const [totalLength, setTotalLength] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [filters, setFilters] = useState({});
 
@@ -75,6 +76,7 @@ export default function BlogEntriesList() {
                 response.json().then(data => {
                     if (response.ok) {
                         setPage(page + 1);
+                        setTotalLength(data.totalLength);
                         setHasMore(data.hasMore);
                         setEntries([...entries, ...data.list]);
                     } else {
@@ -140,6 +142,7 @@ export default function BlogEntriesList() {
 
         index = setTimeout(() => {
             setHasMore(true);
+            setTotalLength(0);
             setEntries([]);
             setPage(0);
 
@@ -208,7 +211,7 @@ export default function BlogEntriesList() {
 
     return (<>
         <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>
-            {`Mostrando ${entries.length} resultados encontrados`}
+            {`Mostrando ${totalLength} resultados`}
         </Text>
 
         <InfiniteScroll
@@ -265,9 +268,11 @@ export default function BlogEntriesList() {
                                     <Divider style={{ margin: '16px 0px' }} />
 
                                     <div className="card-actions">
-                                        <a href="/google.com" target="_blank">
-                                            <Button type="primary" size="small" ghost>Visitar</Button>
-                                        </a>
+                                        {entry.status = 'private' ? <></> : (
+                                            <a href={`${process.env.REACT_APP_PUBLIC_URL}/blog/${entry.id}`} target="_blank">
+                                                <Button type="primary" size="small" ghost>Visitar</Button>
+                                            </a>
+                                        )}
 
                                         <Link to={`/blog/entries/edit/${entry.id}`}>
                                             <Button type="primary" size="small">Editar</Button>

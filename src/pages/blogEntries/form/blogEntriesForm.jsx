@@ -128,7 +128,7 @@ export default function BlogEntriesForm() {
                     <Item label="Cover" name="coverUrl"
                         rules={[
                             { required: true },
-                            { max: 256 },
+                            { max: 512 },
                             {
                                 validator: (_, value) => {
                                     if (!value) return Promise.resolve();
@@ -153,7 +153,7 @@ export default function BlogEntriesForm() {
                 <Col xs={24} sm={14} md={16} lg={17} xl={7}>
                     <Item label="Cabecera" name="headerUrl"
                         rules={[
-                            { max: 256 },
+                            { max: 512 },
                             {
                                 validator: (_, value) => {
                                     if (!value || DefaultPlayer.canPlay(value)) {
