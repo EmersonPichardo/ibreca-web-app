@@ -105,9 +105,10 @@ export default function BlogEntriesForm() {
 
         setLoading(true);
 
-        const { secure_url } = await BlogEntriesService.UploadImage(files[0]);
+        const { secure_url, public_id } = await BlogEntriesService.UploadImage(files[0]);
 
         values.coverUrl = secure_url;
+        values.CoverUrlAssetId = public_id;
         values.body = body;
         (id ? BlogEntriesService.Edit(id, values) : BlogEntriesService.Create(values))
             .then(response => {
@@ -161,8 +162,8 @@ export default function BlogEntriesForm() {
 
                 <Col xs={24} sm={14} md={16} lg={17} xl={7}>
                     <Item label="Cover" name="coverUrl" required>
-                        <Upload disabled={loading} {...uploadProps}>
-                            {files.length ? null : <Button icon={<UploadOutlined />}>Click para subir imagen</Button>}
+                        <Upload {...uploadProps}>
+                            {files.length ? null : <Button disabled={loading} icon={<UploadOutlined />}>Click para subir imagen</Button>}
                         </Upload>
                     </Item>
                 </Col>

@@ -9,7 +9,7 @@ const BlogEntriesService = {
     Edit: (id, element) => { element.id = id; return Send('put', `${url}/${id}`, element); },
     Create: (element) => Send('post', url, element),
     Delete: (id) => Send('delete', `${url}/${id}`),
-    UploadImage: async (file) => await (await Upload(file, 'ibreca/announcements')).json()
+    UploadImage: async (file) => await (await Upload(file, 'ibreca/blogentries')).json()
 }
 
 export default BlogEntriesService;

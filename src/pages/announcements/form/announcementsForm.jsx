@@ -29,13 +29,13 @@ export default function AnnouncementsForm() {
         maxCount: 1,
         fileList: files,
         beforeUpload: () => false,
-        onChange: ({file}) => {
-            if(file.status == 'removed') return;
+        onChange: ({ file }) => {
+            if (file.status == 'removed') return;
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
 
-            reader.onload = ({target: {result}}) => {
+            reader.onload = ({ target: { result } }) => {
                 file.url = result;
                 setFiles([file]);
             };
@@ -99,9 +99,10 @@ export default function AnnouncementsForm() {
     const onFinish = async (values) => {
         setLoading(true);
 
-        const {secure_url} = await AnnouncementsService.UploadImage(files[0]);
+        const { secure_url, public_id } = await AnnouncementsService.UploadImage(files[0]);
 
         values.url = secure_url;
+        values.UrlAssetId = public_id;
 
         (id ? AnnouncementsService.Edit(id, values) : AnnouncementsService.Create(values))
             .then(response => {
@@ -155,8 +156,8 @@ export default function AnnouncementsForm() {
 
                 <Col xs={24} md={16} lg={17} xl={10}>
                     <Item label="Cover" name="url" required>
-                        <Upload disabled={loading} {...uploadProps}>
-                            {files.length ? null : <Button icon={<UploadOutlined />}>Click para subir imagen</Button>}
+                        <Upload {...uploadProps}>
+                            {files.length ? null : <Button disabled={loading} icon={<UploadOutlined />}>Click para subir imagen</Button>}
                         </Upload>
                     </Item>
                 </Col>
