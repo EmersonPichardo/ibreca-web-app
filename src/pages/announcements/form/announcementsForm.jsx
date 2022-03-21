@@ -13,7 +13,6 @@ import ImageDisplayer from '../../../componets/imagedisplayer/imagedisplayer';
 import './announcementsForm.css';
 
 const { Item } = Form;
-const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUDNAME;
 
 export default function AnnouncementsForm() {
     const { setCurrentPage } = useContext(PageContext);
@@ -25,7 +24,7 @@ export default function AnnouncementsForm() {
     const [files, setFiles] = useState([]);
     const [preview, setPreview] = useState({});
 
-    const daggerProps = {
+    const uploadProps = {
         listType: 'picture',
         maxCount: 1,
         fileList: files,
@@ -80,7 +79,12 @@ export default function AnnouncementsForm() {
                     if (response.ok) {
                         if (data.showUntil) data.showUntil = moment(data.showUntil);
                         form.setFieldsValue(data);
-                        setFiles([data.url]);
+                        setFiles([{
+                            uid: '-1',
+                            name: data.title,
+                            status: 'done',
+                            url: data.url,
+                        }]);
                         setLoading(false);
                     } else {
                         message.error(data.title);
@@ -151,7 +155,7 @@ export default function AnnouncementsForm() {
 
                 <Col xs={24} md={16} lg={17} xl={10}>
                     <Item label="Cover" name="url" required>
-                        <Upload disabled={loading} {...daggerProps}>
+                        <Upload disabled={loading} {...uploadProps}>
                             {files.length ? null : <Button icon={<UploadOutlined />}>Click para subir imagen</Button>}
                         </Upload>
                     </Item>

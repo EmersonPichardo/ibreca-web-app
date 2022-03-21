@@ -1,14 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 
-import { Row, Col, Form, Input, Radio, Button, message } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
+import { Row, Col, Form, Input, Radio, Button, message, Upload, Modal } from 'antd';
+import { SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { Editor } from '@tinymce/tinymce-react';
 
 import { PageContext } from '../../../contexts/pageContext';
 import BlogEntriesService from '../../../services/apiServices/blogEntriesService';
 import Player, { DefaultPlayer } from '../../../componets/player/player';
-import ImageDisplayer, { CanDisplay } from '../../../componets/imagedisplayer/imagedisplayer';
+import ImageDisplayer from '../../../componets/imagedisplayer/imagedisplayer';
 
 import './blogEntriesForm.css';
 
@@ -21,9 +21,36 @@ export default function BlogEntriesForm() {
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
-    const [coverurl, setCoverurl] = useState();
     const [headerurl, setHeaderurl] = useState();
     const [body, setBody] = useState();
+    const [files, setFiles] = useState([]);
+    const [preview, setPreview] = useState({});
+
+    const uploadProps = {
+        listType: 'picture',
+        maxCount: 1,
+        fileList: files,
+        beforeUpload: () => false,
+        onChange: ({ file }) => {
+            if (file.status == 'removed') return;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onload = ({ target: { result } }) => {
+                file.url = result;
+                setFiles([file]);
+            };
+        },
+        onPreview: file => {
+            setPreview({
+                visible: true,
+                title: file.name,
+                url: file.url
+            });
+        },
+        onRemove: () => setFiles([])
+    }
 
     useEffect(() => {
         setCurrentPage({
@@ -54,7 +81,12 @@ export default function BlogEntriesForm() {
                 response.json().then(data => {
                     if (response.ok) {
                         form.setFieldsValue(data);
-                        setCoverurl(data.coverUrl);
+                        setFiles([{
+                            uid: '-1',
+                            name: data.title,
+                            status: 'done',
+                            url: data.coverUrl,
+                        }]);
                         setHeaderurl(data.headerUrl);
                         setBody(data.body);
                         setLoading(false);
@@ -68,11 +100,14 @@ export default function BlogEntriesForm() {
             });
     }
 
-    const onFinish = (values) => {
+    const onFinish = async (values) => {
         if (!body) return message.error("El cuerpo es requerido");
 
         setLoading(true);
 
+        const { secure_url } = await BlogEntriesService.UploadImage(files[0]);
+
+        values.coverUrl = secure_url;
         values.body = body;
         (id ? BlogEntriesService.Edit(id, values) : BlogEntriesService.Create(values))
             .then(response => {
@@ -125,29 +160,11 @@ export default function BlogEntriesForm() {
                 </Col>
 
                 <Col xs={24} sm={14} md={16} lg={17} xl={7}>
-                    <Item label="Cover" name="coverUrl"
-                        rules={[
-                            { required: true },
-                            { max: 512 },
-                            {
-                                validator: (_, value) => {
-                                    if (!value) return Promise.resolve();
-                                    return CanDisplay(value)
-                                        .then(
-                                            () => Promise.resolve(),
-                                            () => Promise.reject('Imagen no encontrada')
-                                        );
-                                }
-                            }
-                        ]}
-                        hasFeedback={form.getFieldValue('coverUrl')}
-                    >
-                        <Input disabled={loading} onChange={(event) => setCoverurl(event.target.value)} />
+                    <Item label="Cover" name="coverUrl" required>
+                        <Upload disabled={loading} {...uploadProps}>
+                            {files.length ? null : <Button icon={<UploadOutlined />}>Click para subir imagen</Button>}
+                        </Upload>
                     </Item>
-                </Col>
-
-                <Col xs={24} sm={10} md={8} lg={7} xl={5}>
-                    <ImageDisplayer src={coverurl} />
                 </Col>
 
                 <Col xs={24} sm={14} md={16} lg={17} xl={7}>
@@ -199,6 +216,15 @@ export default function BlogEntriesForm() {
                 </Col>
             </Row>
         </Form>
+
+        <Modal
+            visible={preview.visible}
+            title={preview.title}
+            onCancel={() => { setPreview({ visible: false }) }}
+            footer={null}
+        >
+            <ImageDisplayer src={preview.url} />
+        </Modal>
     </>
     )
 }

@@ -1,4 +1,5 @@
 import Send from './_apiServiceConfig';
+import Upload from '../cloudinaryService';
 
 const url = 'blogEntries';
 
@@ -7,7 +8,8 @@ const BlogEntriesService = {
     Get: (id) => Send('get', `${url}/${id}`),
     Edit: (id, element) => { element.id = id; return Send('put', `${url}/${id}`, element); },
     Create: (element) => Send('post', url, element),
-    Delete: (id) => Send('delete', `${url}/${id}`)
+    Delete: (id) => Send('delete', `${url}/${id}`),
+    UploadImage: async (file) => await (await Upload(file, 'ibreca/announcements')).json()
 }
 
 export default BlogEntriesService;
