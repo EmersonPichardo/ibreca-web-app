@@ -1,6 +1,6 @@
 const baseUrl = process.env.REACT_APP_API_URL;
 
-export default function Send(method, url, body, headers) {
+export default function Send(method, url, body) {
 
     const config = {
         method,

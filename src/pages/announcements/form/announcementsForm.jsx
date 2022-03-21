@@ -1,18 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 
-import { Row, Col, Form, Input, Button, message, DatePicker } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
+import { Row, Col, Form, Input, Button, message, DatePicker, Upload, Modal } from 'antd';
+import { SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import moment from "moment";
 import locale from 'antd/es/date-picker/locale/es_ES';
 
 import { PageContext } from '../../../contexts/pageContext';
 import AnnouncementsService from '../../../services/apiServices/announcementsService';
-import ImageDisplayer, { CanDisplay } from '../../../componets/imagedisplayer/imagedisplayer';
+import ImageDisplayer from '../../../componets/imagedisplayer/imagedisplayer';
 
 import './announcementsForm.css';
 
 const { Item } = Form;
+const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUDNAME;
 
 export default function AnnouncementsForm() {
     const { setCurrentPage } = useContext(PageContext);
@@ -21,7 +22,34 @@ export default function AnnouncementsForm() {
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
-    const [url, setUrl] = useState();
+    const [files, setFiles] = useState([]);
+    const [preview, setPreview] = useState({});
+
+    const daggerProps = {
+        listType: 'picture',
+        maxCount: 1,
+        fileList: files,
+        beforeUpload: () => false,
+        onChange: ({file}) => {
+            if(file.status == 'removed') return;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onload = ({target: {result}}) => {
+                file.url = result;
+                setFiles([file]);
+            };
+        },
+        onPreview: file => {
+            setPreview({
+                visible: true,
+                title: file.name,
+                url: file.url
+            });
+        },
+        onRemove: () => setFiles([])
+    }
 
     useEffect(() => {
         setCurrentPage({
@@ -52,7 +80,7 @@ export default function AnnouncementsForm() {
                     if (response.ok) {
                         if (data.showUntil) data.showUntil = moment(data.showUntil);
                         form.setFieldsValue(data);
-                        setUrl(data.url);
+                        setFiles([data.url]);
                         setLoading(false);
                     } else {
                         message.error(data.title);
@@ -64,8 +92,12 @@ export default function AnnouncementsForm() {
             });
     }
 
-    const onFinish = (values) => {
+    const onFinish = async (values) => {
         setLoading(true);
+
+        const {secure_url} = await AnnouncementsService.UploadImage(files[0]);
+
+        values.url = secure_url;
 
         (id ? AnnouncementsService.Edit(id, values) : AnnouncementsService.Create(values))
             .then(response => {
@@ -99,15 +131,16 @@ export default function AnnouncementsForm() {
             }}
         >
             <Row gutter={[32, 24]} justify="center" align="middle">
-                <Col xs={24} md={12} xl={6}>
+                <Col xs={24} md={16} xl={10}>
                     <Item label="Título" name="title" rules={[{ required: true, max: 100 }]} hasFeedback>
                         <Input disabled={loading} />
                     </Item>
                 </Col>
 
-                <Col xs={24} md={12} xl={6}>
+                <Col xs={24} md={8} xl={4}>
                     <Item label="Mostrar hasta la fecha" name="showUntil">
                         <DatePicker
+                            disabled={loading}
                             className="date-picker"
                             format="DD MMM YYYY"
                             locale={locale}
@@ -116,33 +149,24 @@ export default function AnnouncementsForm() {
                     </Item>
                 </Col>
 
-                <Col xs={24} sm={14} md={16} lg={17} xl={6}>
-                    <Item label="Cover" name="url"
-                        rules={[
-                            { required: true },
-                            { max: 512 },
-                            {
-                                validator: (_, value) => {
-                                    if (!value) return Promise.resolve();
-                                    return CanDisplay(value)
-                                        .then(
-                                            () => Promise.resolve(),
-                                            () => Promise.reject('Imagen no encontrada')
-                                        );
-                                }
-                            }
-                        ]}
-                        hasFeedback={form.getFieldValue('url')}
-                    >
-                        <Input disabled={loading} onChange={(event) => setUrl(event.target.value)} />
+                <Col xs={24} md={16} lg={17} xl={10}>
+                    <Item label="Cover" name="url" required>
+                        <Upload disabled={loading} {...daggerProps}>
+                            {files.length ? null : <Button icon={<UploadOutlined />}>Click para subir imagen</Button>}
+                        </Upload>
                     </Item>
-                </Col>
-
-                <Col xs={24} sm={10} md={8} lg={7} xl={5}>
-                    <ImageDisplayer src={url} />
                 </Col>
             </Row>
         </Form>
+
+        <Modal
+            visible={preview.visible}
+            title={preview.title}
+            onCancel={() => { setPreview({ visible: false }) }}
+            footer={null}
+        >
+            <ImageDisplayer src={preview.url} />
+        </Modal>
     </>
     )
 }
