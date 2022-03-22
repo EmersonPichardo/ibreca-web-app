@@ -68,47 +68,35 @@ export default function BlogEntriesList() {
         return () => clearTimeout(index)
     }, [filters])
 
-    const getMoreEntries = () => {
+    const getMoreEntries = async () => {
         const { search, status, from, to } = filters;
 
-        BlogEntriesService.GetPage(page + 1, status, search, from, to)
-            .then(response => {
-                response.json().then(data => {
-                    if (response.ok) {
-                        setPage(page + 1);
-                        setTotalLength(data.totalLength);
-                        setHasMore(data.hasMore);
-                        setEntries([...entries, ...data.list]);
-                    } else {
-                        message.error(data.title);
-                    }
-                })
-            })
-            .catch((error) => {
-                message.error(error.message);
-            });
+        const response = BlogEntriesService.GetPage(page + 1, status, search, from, to);
+        const { data: { title, totalLength, hasMore, list } } = response;
+        if (!response.isOk) { return message.error(title) }
+
+        setPage(page + 1);
+        setTotalLength(totalLength);
+        setHasMore(hasMore);
+        setEntries([...entries, ...list]);
     }
 
-    const remove = (id) => {
-        return new Promise((resolve, reject) => {
-            BlogEntriesService.Delete(id)
-                .then(response => {
-                    if (response.ok) {
-                        setTimeout(() => setEntries(entries.filter(entry => entry.id !== id)), 0);
-                        message.success('Publicación eliminada');
-                        resolve();
-                    } else {
-                        response.json().then(error => {
-                            message.error(error.title);
-                            reject(error.title);
-                        })
-                    }
-                })
-                .catch(error => {
-                    message.error(error.message);
-                    reject(error.message);
-                })
-        })
+    const remove = async (id) => {
+        const returnWithErrorMessage = ({ title }) => {
+            message.error(title);
+            throw new Error(title);
+        }
+
+        const excludeEntry = (id) => {
+            return entries.filter(entry => entry.id !== id);
+        }
+
+        const response = BlogEntriesService.Delete(id);
+        const { data } = response;
+        if (!response.isOk) { return returnWithErrorMessage(data) }
+
+        setEntries(excludeEntry(id));
+        message.success('Publicación eliminada');
     }
 
     const translate = (status) => {

@@ -4,12 +4,12 @@ import Upload from '../cloudinaryService';
 const url = 'blogEntries';
 
 const BlogEntriesService = {
-    GetPage: (page, search, status, from, to) => Send('get', `${url}/page/${page}/${search || ' '}/${status || ' '}/${from || ' '}/${to || ' '}/`),
-    Get: (id) => Send('get', `${url}/${id}`),
-    Edit: (id, element) => { element.id = id; return Send('put', `${url}/${id}`, element); },
-    Create: (element) => Send('post', url, element),
-    Delete: (id) => Send('delete', `${url}/${id}`),
-    UploadImage: async (file) => await (await Upload(file, 'ibreca/blogentries')).json()
+    GetPage: async (page, search, status, from, to) => await Send('get', `${url}/page/${page}/${search || ' '}/${status || ' '}/${from || ' '}/${to || ' '}/`),
+    Get: async (id) => await Send('get', `${url}/${id}`),
+    Edit: async (id, element) => { element.id = id; return await Send('put', `${url}/${id}`, element); },
+    Create: async (element) => await Send('post', url, element),
+    Delete: async (id) => await Send('delete', `${url}/${id}`),
+    UploadImage: async (file) => await Upload(file, 'ibreca/blogentries')
 }
 
 export default BlogEntriesService;

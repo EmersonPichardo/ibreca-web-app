@@ -63,47 +63,35 @@ export default function AnnouncementsList() {
         return () => clearTimeout(index)
     }, [filters])
 
-    const getMoreEntries = () => {
+    const getMoreEntries = async () => {
         const { search } = filters;
 
-        AnnouncementsService.GetPage(page + 1, search)
-            .then(response => {
-                response.json().then(data => {
-                    if (response.ok) {
-                        setPage(page + 1);
-                        setTotalLength(data.totalLength);
-                        setHasMore(data.hasMore);
-                        setAnnouncements([...announcements, ...data.list]);
-                    } else {
-                        message.error(data.title);
-                    }
-                })
-            })
-            .catch((error) => {
-                message.error(error.message);
-            });
+        const response = await AnnouncementsService.GetPage(page + 1, search);
+        const { data: { title, totalLength, hasMore, list } } = response;
+        if (!response.isOk) return message.error(title);
+
+        setPage(page + 1);
+        setTotalLength(totalLength);
+        setHasMore(hasMore);
+        setAnnouncements([...announcements, ...list]);
     }
 
-    const remove = (id) => {
-        return new Promise((resolve, reject) => {
-            AnnouncementsService.Delete(id)
-                .then(response => {
-                    if (response.ok) {
-                        setTimeout(() => setAnnouncements(announcements.filter(announcement => announcement.id !== id)), 0);
-                        message.success('Anuncio eliminado');
-                        resolve();
-                    } else {
-                        response.json().then(error => {
-                            message.error(error.title);
-                            reject(error.title);
-                        })
-                    }
-                })
-                .catch(error => {
-                    message.error(error.message);
-                    reject(error.message);
-                })
-        })
+    const remove = async (id) => {
+        const returnWithErrorMessage = ({ title }) => {
+            message.error(title);
+            throw new Error(title);
+        }
+
+        const excludeAnnouncement = (id) => {
+            return announcements.filter(announcement => announcement.id !== id);
+        }
+
+        const response = await AnnouncementsService.Delete(id);
+        const { data } = response;
+        if (!response.isOk) { return returnWithErrorMessage(data); }
+
+        setAnnouncements(excludeAnnouncement(id))
+        message.success('Anuncio eliminado');
     }
 
     const filterData = (values) => {

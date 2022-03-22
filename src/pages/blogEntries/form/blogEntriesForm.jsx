@@ -75,29 +75,19 @@ export default function BlogEntriesForm() {
         else { setLoading(false); }
     }, [])
 
-    const setEditModeForm = (id) => {
-        BlogEntriesService.Get(id)
-            .then(response => {
-                response.json().then(data => {
-                    if (response.ok) {
-                        form.setFieldsValue(data);
-                        setFiles([{
-                            uid: '-1',
-                            name: data.title,
-                            status: 'done',
-                            url: data.coverUrl,
-                        }]);
-                        setHeaderurl(data.headerUrl);
-                        setBody(data.body);
-                        setLoading(false);
-                    } else {
-                        message.error(data.title);
-                    }
-                })
-            })
-            .catch((error) => {
-                message.error(error.message);
-            });
+    const setEditModeForm = async (id) => {
+        const response = await BlogEntriesService.Get(id);
+        const { data } = response;
+        const { title, coverUrl: url, headerUrl, body } = data;
+        if (!response.isOk) { return message.error(title); }
+
+        form.setFieldsValue(data);
+
+        setFiles([{ uid: '-1', name: title, status: 'done', url }]);
+        setHeaderurl(headerUrl);
+        setBody(body);
+
+        setLoading(false);
     }
 
     const onFinish = async (values) => {
@@ -105,27 +95,23 @@ export default function BlogEntriesForm() {
 
         setLoading(true);
 
-        const { secure_url, public_id } = await BlogEntriesService.UploadImage(files[0]);
+        const returnWithErrorMessage = ({ title }) => {
+            message.error(title); setLoading(false);
+        }
 
-        values.coverUrl = secure_url;
-        values.CoverUrlAssetId = public_id;
-        values.body = body;
-        (id ? BlogEntriesService.Edit(id, values) : BlogEntriesService.Create(values))
-            .then(response => {
-                if (response.ok) {
-                    message.success('Cambios guardados');
-                    navigate('/blog/entries');
-                } else {
-                    response.json().then(error => {
-                        message.error(error.title);
-                        setLoading(false);
-                    })
-                }
-            })
-            .catch((error) => {
-                message.error(error.message);
-                setLoading(false);
-            });
+        const imageResponse = await BlogEntriesService.UploadImage(files[0]);
+        const { data: imageData } = imageResponse;
+        if (!imageResponse.isOk) { return returnWithErrorMessage(imageData); }
+
+        const { secure_url: coverUrl, public_id: coverUrlAssetId } = imageData;
+        values = { ...values, ...{ coverUrl, coverUrlAssetId, body } };
+
+        const response = await (id ? BlogEntriesService.Edit(id, values) : BlogEntriesService.Create(values))
+        const { data } = response;
+        if (!response.isOk) { return returnWithErrorMessage(data); }
+
+        message.success('Cambios guardados');
+        navigate('/blog/entries');
     };
 
     return (<>

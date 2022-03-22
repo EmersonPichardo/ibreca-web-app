@@ -21,32 +21,21 @@ export default function Login() {
 
     useEffect(() => { logout() }, []);
 
-    const onFinish = (values) => {
+    const onFinish = async (values) => {
         setLoading(true);
 
-        LoginService.Login(values)
-            .then(response => {
-                if (response.ok) {
-                    response.json().then(sesion => {
-                        setSesion(sesion);
-                        navigate(callbackRoute);
-                    })
-                } else {
-                    response.json().then(error => {
-                        if (error.status === 404) {
-                            message.error('Crendenciales incorrectas');
-                        } else {
-                            message.error(`${error.status}: ${error.title}`);
-                        }
+        const returnWithErrorMessage = ({ status, title }) => {
+            if (status === 404) message.error('Crendenciales incorrectas');
+            else message.error(`${status}: ${title}`);
+            setLoading(false);
+        }
 
-                        setLoading(false);
-                    })
-                }
-            })
-            .catch((error) => {
-                message.error(error.message);
-                setLoading(false);
-            });
+        const response = await LoginService.Login(values);
+        const { data } = response;
+        if (!response.isOk) { return returnWithErrorMessage(data); }
+
+        setSesion(data);
+        navigate(callbackRoute);
     };
 
     return (

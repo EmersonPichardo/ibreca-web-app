@@ -31,31 +31,22 @@ export default function MainLayout() {
 
     const [collapsed, setCollapsed] = useState(true);
 
-    useEffect(() => {
+    useEffect(async () => {
         if (!getSesion()) {
             message.error('Por favor inicie sesión');
             setCallbackRoute(pathname);
             return navigate('/login');
         }
 
-        LoginService.IsValidToken()
-            .then(response => {
-                if (response.status == 401) {
-                    message.error('Sesión agotada');
-                    setCallbackRoute(pathname);
-                    navigate('/login');
-                } else if (response.status != 200) {
-                    response.json().then(data => {
-                        message.error(data.Message);
-                        setCallbackRoute(pathname);
-                        navigate('/login');
-                    });
-                }
-            })
-            .catch((error) => {
-                message.error(error.message);
-                navigate('/login');
-            });
+        const returnWithErrorMessage = ({ status, Message }) => {
+            message.error(status == 401 ? Message : 'Sesión agotada');
+            setCallbackRoute(pathname);
+            navigate('/login');
+        }
+
+        const response = await LoginService.IsValidToken();
+        const { data } = response;
+        if (!response.isOk) { return returnWithErrorMessage(data); }
     }, [pathname]);
 
     const toggle = () => {

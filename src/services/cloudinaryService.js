@@ -11,6 +11,9 @@ export default async function Upload(file, folderPath) {
     formData.append('folder', folderPath);
 
     const config = { method: 'post', body: formData };
+    const response = await fetch(fullUploadUrl, config);
+    const jsonResult = await response.json();
+    const result = { isOk: response.ok, data: jsonResult };
 
-    return await fetch(fullUploadUrl, config);
+    return result;
 }
