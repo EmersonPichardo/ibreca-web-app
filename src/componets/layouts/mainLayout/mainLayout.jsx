@@ -39,7 +39,7 @@ export default function MainLayout() {
         }
 
         const returnWithErrorMessage = ({ status, Message }) => {
-            message.error(status == 401 ? Message : 'Sesión agotada');
+            message.error(status === 401 ? Message : 'Sesión agotada');
             setCallbackRoute(pathname);
             navigate('/login');
         }

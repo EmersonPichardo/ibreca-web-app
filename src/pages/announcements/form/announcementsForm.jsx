@@ -69,12 +69,13 @@ export default function AnnouncementsForm() {
         setLoading(true);
 
         const returnWithErrorMessage = ({ title }) => {
-            message.error(title); setLoading(false);
+            message.error(title);
+            setLoading(false);
         }
 
         const imageResponse = await AnnouncementsService.UploadImage(files[0]);
         const { data: imageData } = imageResponse;
-        if (!imageResponse.isOk) { return returnWithErrorMessage(data); }
+        if (!imageResponse.isOk) { return returnWithErrorMessage(data) }
 
         const { secure_url: url, public_id: urlAssetId } = imageData;
         values = { ...values, ...{ url, urlAssetId } };
@@ -85,8 +86,32 @@ export default function AnnouncementsForm() {
 
         message.success('Cambios guardados');
         navigate('/announcements');
+
         setLoading(false);
     };
+
+    const getPastDates = (current) => current.format('YYYYMMDD') < moment().format('YYYYMMDD');
+    const beforeUpload = () => false;
+    const onUploadChange = ({ file }) => {
+        if (file.status === 'removed') return;
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = ({ target: { result } }) => {
+            file.url = result;
+            setFiles([file]);
+        };
+    }
+    const onUploadedFilePreview = (file) => {
+        setPreview({
+            visible: true,
+            title: file.name,
+            url: file.url
+        });
+    }
+    const onUploadedFileRemove = () => setFiles([]);
+    const onModalCancel = () => { setPreview({ visible: false }) };
 
     const props = {
         form: {
@@ -114,7 +139,7 @@ export default function AnnouncementsForm() {
             className: 'date-picker',
             format: 'DD MMM YYYY',
             locale,
-            disabledDate: current => current.format('YYYYMMDD') < moment().format('YYYYMMDD')
+            disabledDate: getPastDates
         },
 
         formRowCol3: { xs: 24, md: 16, xl: 10 },
@@ -123,32 +148,16 @@ export default function AnnouncementsForm() {
             listType: 'picture',
             maxCount: 1,
             fileList: files,
-            beforeUpload: () => false,
-            onChange: ({ file }) => {
-                if (file.status == 'removed') return;
-
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-
-                reader.onload = ({ target: { result } }) => {
-                    file.url = result;
-                    setFiles([file]);
-                };
-            },
-            onPreview: file => {
-                setPreview({
-                    visible: true,
-                    title: file.name,
-                    url: file.url
-                });
-            },
-            onRemove: () => setFiles([])
+            beforeUpload: beforeUpload,
+            onChange: onUploadChange,
+            onPreview: onUploadedFilePreview,
+            onRemove: onUploadedFileRemove
         },
         formRowCol3ItemUploadButton: { disabled: loading, icon: <UploadOutlined /> },
         modal: {
             visible: preview.visible,
             title: preview.title,
-            onCancel: () => { setPreview({ visible: false }) },
+            onCancel: onModalCancel,
             footer: null
         },
         modalImageDisplayer: { src: preview.url }

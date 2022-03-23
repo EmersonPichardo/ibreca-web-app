@@ -26,32 +26,6 @@ export default function BlogEntriesForm() {
     const [files, setFiles] = useState([]);
     const [preview, setPreview] = useState({});
 
-    const uploadProps = {
-        listType: 'picture',
-        maxCount: 1,
-        fileList: files,
-        beforeUpload: () => false,
-        onChange: ({ file }) => {
-            if (file.status == 'removed') return;
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-
-            reader.onload = ({ target: { result } }) => {
-                file.url = result;
-                setFiles([file]);
-            };
-        },
-        onPreview: file => {
-            setPreview({
-                visible: true,
-                title: file.name,
-                url: file.url
-            });
-        },
-        onRemove: () => setFiles([])
-    }
-
     useEffect(() => {
         setCurrentPage({
             breadcrumb: [
@@ -96,12 +70,13 @@ export default function BlogEntriesForm() {
         setLoading(true);
 
         const returnWithErrorMessage = ({ title }) => {
-            message.error(title); setLoading(false);
+            message.error(title);
+            setLoading(false);
         }
 
         const imageResponse = await BlogEntriesService.UploadImage(files[0]);
         const { data: imageData } = imageResponse;
-        if (!imageResponse.isOk) { return returnWithErrorMessage(imageData); }
+        if (!imageResponse.isOk) { return returnWithErrorMessage(imageData) }
 
         const { secure_url: coverUrl, public_id: coverUrlAssetId } = imageData;
         values = { ...values, ...{ coverUrl, coverUrlAssetId, body } };
@@ -114,22 +89,88 @@ export default function BlogEntriesForm() {
         navigate('/blog/entries');
     };
 
+    const onHeaderInputChange = ({ event: { target: { value } } }) => setHeaderurl(value);
+    const onUploadChange = ({ file }) => {
+        if (file.status === 'removed') return;
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = ({ target: { result } }) => {
+            file.url = result;
+            setFiles([file]);
+        };
+    }
+    const onUploadedFilePreview = (file) => {
+        setPreview({
+            visible: true,
+            title: file.name,
+            url: file.url
+        });
+    }
+
+    const uploadProps = {
+        listType: 'picture',
+        maxCount: 1,
+        fileList: files,
+        beforeUpload: () => false,
+        onChange: onUploadChange,
+        onPreview: onUploadedFilePreview,
+        onRemove: () => setFiles([])
+    }
+    const formProps = {
+        form: form,
+        layout: 'vertical',
+        onFinish: onFinish,
+        autoComplete: 'off',
+        initialValues: {
+            status: 'private'
+        },
+        validateMessages: {
+            required: 'Este campo es requerido',
+            string: {
+                max: 'Este campo debe tener menos de ${max} caracteres'
+            }
+        }
+    }
+    const headerInputRules = [{
+        validator: (_, value) => {
+            if (!value || DefaultPlayer.canPlay(value)) {
+                return Promise.resolve();
+            } else {
+                return Promise.reject('URL incompatible');
+            }
+        }
+    }];
+    const editorProps = {
+        apiKey: 'jfzn77e77mliy3nhiwh8s5qq1v669czhlotxr057fr7jw75c',
+        init: {
+            height: 500,
+            menubar: true,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code wordcount'
+            ],
+            toolbar: (
+                'undo redo | formatselect | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat'
+            )
+        },
+        value: body,
+        onEditorChange: (value) => setBody(value)
+    }
+    const modalProps = {
+        visible: preview.visible,
+        title: preview.title,
+        onCancel: () => { setPreview({ visible: false }) },
+        footer: null
+    }
+
     return (<>
-        <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            autoComplete="off"
-            initialValues={{
-                status: 'private'
-            }}
-            validateMessages={{
-                required: 'Este campo es requerido',
-                string: {
-                    max: 'Este campo debe tener menos de ${max} caracteres'
-                }
-            }}
-        >
+        <Form {...formProps}>
             <Row gutter={[32, 24]} justify="center" align="middle">
                 <Col xs={24} md={14} lg={16} xl={18}>
                     <Item label="Título" name="title" rules={[{ required: true, max: 100 }]} hasFeedback>
@@ -155,22 +196,8 @@ export default function BlogEntriesForm() {
                 </Col>
 
                 <Col xs={24} sm={14} md={16} lg={17} xl={7}>
-                    <Item label="Cabecera" name="headerUrl"
-                        rules={[
-                            { max: 512 },
-                            {
-                                validator: (_, value) => {
-                                    if (!value || DefaultPlayer.canPlay(value)) {
-                                        return Promise.resolve();
-                                    } else {
-                                        return Promise.reject('URL incompatible');
-                                    }
-                                }
-                            }
-                        ]}
-                        hasFeedback={form.getFieldValue('headerUrl')}
-                    >
-                        <Input disabled={loading} onChange={(event) => setHeaderurl(event.target.value)} />
+                    <Item label="Cabecera" name="headerUrl" max={512} rules={headerInputRules} hasFeedback={form.getFieldValue('headerUrl')}>
+                        <Input disabled={loading} onChange={onHeaderInputChange} />
                     </Item>
                 </Col>
 
@@ -182,34 +209,12 @@ export default function BlogEntriesForm() {
                     <div className="ant-col ant-form-item-label">
                         <label className="ant-form-item-required">Cuerpo</label>
                     </div>
-                    <Editor
-                        apiKey="jfzn77e77mliy3nhiwh8s5qq1v669czhlotxr057fr7jw75c"
-                        init={{
-                            height: 500,
-                            menubar: true,
-                            plugins: [
-                                'advlist autolink lists link image charmap print preview anchor',
-                                'searchreplace visualblocks code fullscreen',
-                                'insertdatetime media table paste code wordcount'
-                            ],
-                            toolbar: 'undo redo | formatselect | ' +
-                                'bold italic backcolor | alignleft aligncenter ' +
-                                'alignright alignjustify | bullist numlist outdent indent | ' +
-                                'removeformat'
-                        }}
-                        value={body}
-                        onEditorChange={(value) => setBody(value)}
-                    />
+                    <Editor {...editorProps} />
                 </Col>
             </Row>
         </Form>
 
-        <Modal
-            visible={preview.visible}
-            title={preview.title}
-            onCancel={() => { setPreview({ visible: false }) }}
-            footer={null}
-        >
+        <Modal {...modalProps}>
             <ImageDisplayer src={preview.url} />
         </Modal>
     </>
