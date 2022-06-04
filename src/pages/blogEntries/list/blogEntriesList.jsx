@@ -71,7 +71,8 @@ export default function BlogEntriesList() {
     const getMoreEntries = async () => {
         const { search, status, from, to } = filters;
 
-        const response = BlogEntriesService.GetPage(page + 1, status, search, from, to);
+        const response = await BlogEntriesService.GetPage(page + 1, status, search, from, to);
+
         const { data: { title, totalLength, hasMore, list } } = response;
         if (!response.isOk) { return message.error(title) }
 
