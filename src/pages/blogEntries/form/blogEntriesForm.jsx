@@ -66,6 +66,7 @@ export default function BlogEntriesForm() {
 
     const onFinish = async (values) => {
         if (!body) return message.error("El cuerpo es requerido");
+        if (!files[0]) return message.error("El cover es requerido");
 
         setLoading(true);
 
@@ -89,7 +90,7 @@ export default function BlogEntriesForm() {
         navigate('/blog/entries');
     };
 
-    const onHeaderInputChange = ({ event: { target: { value } } }) => setHeaderurl(value);
+    const onHeaderInputChange = ({ target: { value } }) => setHeaderurl(value);
     const onUploadChange = ({ file }) => {
         if (file.status === 'removed') return;
 
