@@ -92,7 +92,7 @@ export default function BlogEntriesList() {
             return entries.filter(entry => entry.id !== id);
         }
 
-        const response = BlogEntriesService.Delete(id);
+        const response = await BlogEntriesService.Delete(id);
         const { data } = response;
         if (!response.isOk) { return returnWithErrorMessage(data) }
 
